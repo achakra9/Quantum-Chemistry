@@ -5,6 +5,7 @@
           use, intrinsic :: iso_fortran_env, only: dp => real64
           ! integer, parameter :: dp = selected_real_kind(15)
           use readfiles
+          use integrals
           implicit none
           integer :: dt(8)
           real(dp) :: a,b
@@ -15,6 +16,10 @@
           character(len=50) :: f_input, f_output
           integer :: system(7), calculation(4)
           character(len=10) :: method
+          real(dp), allocatable :: e1int(:,:), e2int(:,:,:,:)
+          integer, allocatable :: irrep(:)
+          character(len=3) :: pg
+          real(dp) :: e_repul
 
 
           call date_and_time(values=dt)
@@ -49,7 +54,7 @@
               stop
           end if
           write(io,'(A24,2x,I2,A1,I2,A1,I4,1x,A2,1x,I2,A1,I2,A1,I2)')"OSCC program started on:",dt(3),'-',dt(2),'-', &
-                     dt(1),' at ',dt(5), ':', dt(6), ':',dt(7)
+                     dt(1),'at',dt(5), ':', dt(6), ':',dt(7)
           write(io,'(A21)')"====================="
           write(io,'(A12,2x,A7)')'Calculation:', method
           write(io,'(A21)')"====================="
@@ -71,9 +76,17 @@
           write(io,'(A6,2x,I6)')'maxccl',calculation(1)
           write(io,'(A6,2x,I6)')'maxeom',calculation(1)
           write(io,*)
+          ! read onebody integrals
+          call load_1body(io,system(6),e1int)
+          ! read twobody integrals
+          call load_2body(io,system(6),e2int,e_repul)
+          ! read symmetry
+          call symmetry(io,system(6),irrep,pg)
+
+
 
           call date_and_time(values=dt)
           write(io,'(A26,2x,I2,A1,I2,A1,I4,1x,A2,1x,I2,A1,I2,A1,I2)')"OSCC program completed on:",dt(3),'-',dt(2),'-', &
-                     dt(1),' at ',dt(5), ':', dt(6), ':',dt(7)
+                     dt(1),'at',dt(5), ':', dt(6), ':',dt(7)
           close(io)
       end program main
